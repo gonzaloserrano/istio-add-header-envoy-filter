@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: add-header-filter
+  labels:
+    app: add-header-filter
+spec:
+  selector: 
+    matchLabels:
+      app: add-header-filter
+  template:
+    metadata:
+      labels:
+        app: add-header-filter
+    spec:
+      containers:
+      - name: add-header-filter
+        image: localhost:5001/add-header-filter:1.0.12
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: add-header-filter
+  labels:
+    app: add-header-filter
+    service: add-header-filter
+spec:
+  ports:
+  - name: grpc
+    port: 8080
+    targetPort: 8080
+  selector:
+    app: add-header-filter

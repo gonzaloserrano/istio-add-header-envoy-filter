@@ -1,0 +1,30 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: add-header-filter
+  namespace: default
+spec:
+  priority: 1000
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: ANY
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.extproc
+        typed_config:
+          '@type': type.googleapis.com/envoy.extensions.filters.http.ext_proc.v3.ExternalProcessor
+          failure_mode_allow: false
+          grpc_service:
+            envoy_grpc:
+              authority: add-header-filter.default.svc.cluster.local
+              cluster_name: outbound|8080||add-header-filter.default.svc.cluster.local
+            timeout: 10s
+  workloadSelector:
+    labels:
+      app.kubernetes.io/name: httpbin
